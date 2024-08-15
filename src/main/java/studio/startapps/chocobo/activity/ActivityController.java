@@ -2,14 +2,18 @@ package studio.startapps.chocobo.activity;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import studio.startapps.chocobo.activity.internal.ActivityRequest;
+import studio.startapps.chocobo.activity.internal.UserReportsCountExceedsException;
 
 @RestController
 @RequestMapping(path = "api/activity")
 @AllArgsConstructor
 public class ActivityController {
+
+    private final static String REAL_IP_HEADER = "X-Real-IP";
 
     private final ActivityService activityService;
 
@@ -20,7 +24,8 @@ public class ActivityController {
     }
 
     @PostMapping(path = "/report")
-    void report(@RequestBody ActivityRequest activityRequest, HttpServletRequest request) {
+    @ResponseStatus(code = HttpStatus.CREATED)
+    void report(@RequestBody ActivityRequest activityRequest, HttpServletRequest request) throws UserReportsCountExceedsException {
         String remoteAddr = this.getRemoteAddr(request);
         this.activityService.saveReport(activityRequest, remoteAddr);
     }
@@ -32,7 +37,7 @@ public class ActivityController {
     }
 
     private String getRemoteAddr(HttpServletRequest request) {
-        String xRealIP = request.getHeader("X-Real-IP");
+        String xRealIP = request.getHeader(ActivityController.REAL_IP_HEADER);
         if (xRealIP != null && !xRealIP.isBlank()) {
             return xRealIP;
         }
@@ -40,7 +45,7 @@ public class ActivityController {
     }
 
     private String getToken(HttpServletRequest request) {
-        String authorization = request.getHeader("Authorization");
+        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorization != null) {
             return authorization.split(" ")[1];
         }

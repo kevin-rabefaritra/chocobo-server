@@ -1,6 +1,8 @@
 package studio.startapps.chocobo.post;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -9,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import studio.startapps.chocobo.post.internal.PostNotFoundException;
+import studio.startapps.chocobo.post.internal.UnauthorizedPostException;
 
 import java.util.List;
 
@@ -18,6 +21,7 @@ import java.util.List;
 public class PostController {
 
     private final static int MAX_PAGE_SIZE = 10;
+    private final static String KEY_HEADER = "Key";
 
     private final PostService postService;
 
@@ -47,9 +51,10 @@ public class PostController {
     void save(
         @RequestPart("post") Post post,
         @RequestParam("thumbnailFile") MultipartFile thumbnailFile,
-        @RequestParam("mediaFile") MultipartFile mediaFile
-    ) {
-        this.postService.save(post, thumbnailFile, mediaFile);
+        @RequestParam("mediaFile") MultipartFile mediaFile,
+        @RequestHeader(PostController.KEY_HEADER) String key
+    ) throws UnauthorizedPostException {
+        this.postService.save(post, thumbnailFile, mediaFile, key);
     }
 
     @GetMapping(path = "/popular")
@@ -67,9 +72,10 @@ public class PostController {
         @PathVariable String postId,
         @RequestPart("post") Post post,
         @RequestParam(name = "thumbnailFile", required = false) MultipartFile thumbnailFile,
-        @RequestParam(name = "mediaFile", required = false) MultipartFile mediaFile
-    ) throws PostNotFoundException {
-        this.postService.update(postId, post, thumbnailFile, mediaFile);
+        @RequestParam(name = "mediaFile", required = false) MultipartFile mediaFile,
+        @RequestHeader(PostController.KEY_HEADER) String key
+    ) throws PostNotFoundException, UnauthorizedPostException {
+        this.postService.update(postId, post, thumbnailFile, mediaFile, key);
     }
 
     @GetMapping(path = "/{titleId}/similar")

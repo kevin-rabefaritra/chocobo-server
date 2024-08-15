@@ -2,6 +2,7 @@ package studio.startapps.chocobo.post;
 
 import lombok.AllArgsConstructor;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import studio.startapps.chocobo.activity.ActivityService;
 import studio.startapps.chocobo.file.FileStorageService;
 import studio.startapps.chocobo.post.internal.PostNotFoundException;
+import studio.startapps.chocobo.post.internal.UnauthorizedPostException;
 import studio.startapps.chocobo.utils.DateUtils;
 import studio.startapps.chocobo.utils.StreamUtils;
 import studio.startapps.chocobo.utils.StringUtils;
@@ -16,19 +18,31 @@ import studio.startapps.chocobo.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
-@AllArgsConstructor
 public class PostService {
 
     private static final int KEYWORD_MIN_LENGTH = 4;
     private static final String TAG_KEYWORD_SEPARATOR = ";";
 
+    private final String masterKey;
+
     private final ActivityService activityService;
 
     private final PostRepository postRepository;
     private final FileStorageService fileStorageService;
+
+    public PostService(
+            @Value("${chocobo.master-key}") String masterKey,
+            ActivityService activityService,
+            PostRepository postRepository,
+            FileStorageService fileStorageService
+    ) {
+        this.masterKey = masterKey;
+        this.activityService = activityService;
+        this.postRepository = postRepository;
+        this.fileStorageService = fileStorageService;
+    }
 
     Page<Post> findAll(Pageable pageable) {
         return this.postRepository.findAll(pageable);
@@ -42,7 +56,11 @@ public class PostService {
         return this.postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
     }
 
-    Post save(Post post, MultipartFile thumbnailFile, MultipartFile mediaFile) {
+    Post save(Post post, MultipartFile thumbnailFile, MultipartFile mediaFile, String masterKey) throws UnauthorizedPostException {
+        if (!masterKey.equals(this.masterKey)) {
+            throw new UnauthorizedPostException();
+        }
+
         String filename = StringUtils.generateRandom();
         String savedThumbnail = this.fileStorageService.saveThumbnail(thumbnailFile, filename);
         String savedMedia = this.fileStorageService.saveMedia(mediaFile, filename);
@@ -61,7 +79,11 @@ public class PostService {
         return this.postRepository.save(post);
     }
 
-    Post update(String postId, Post post, MultipartFile thumbnailFile, MultipartFile mediaFile) throws PostNotFoundException {
+    Post update(String postId, Post post, MultipartFile thumbnailFile, MultipartFile mediaFile, String masterKey) throws PostNotFoundException, UnauthorizedPostException {
+        if (!masterKey.equals(this.masterKey)) {
+            throw new UnauthorizedPostException();
+        }
+
         Post updatedPost = this.findById(postId);
         String titleId = StringUtils.slugify(post.getTitle());
 
