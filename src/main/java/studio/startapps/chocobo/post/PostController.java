@@ -20,7 +20,6 @@ import java.util.List;
 @AllArgsConstructor
 public class PostController {
 
-    private final static int MAX_PAGE_SIZE = 10;
     private final static String KEY_HEADER = "Key";
 
     private final PostService postService;
