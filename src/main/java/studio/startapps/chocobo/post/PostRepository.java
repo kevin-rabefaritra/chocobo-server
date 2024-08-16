@@ -12,8 +12,12 @@ import java.util.Optional;
 @Repository
 public interface PostRepository extends MongoRepository<Post, String>, PagingAndSortingRepository<Post, String> {
 
+    Page<Post> findAllByAvailableTrue(Pageable pageable);
+
+    Optional<Post> findByTitleIdAndAvailable(String titleId, boolean available);
+
     Optional<Post> findByTitleId(String titleId);
 
-    @Query("{'$or': [{'title': { $regex: ?0, $options: 'i' }}, {'tags': { $regex: ?0, $options: 'i' }}, {'keywords': { $regex: ?0, $options: 'i' }}]}")
+    @Query("{'$and': [{'$or': [{'title': { $regex: ?0, $options: 'i' }}, {'tags': { $regex: ?0, $options: 'i' }}, {'keywords': { $regex: ?0, $options: 'i' }}]}, {'available': true}]}")
     Page<Post> findByKeyword(String keyword, Pageable pageable);
 }

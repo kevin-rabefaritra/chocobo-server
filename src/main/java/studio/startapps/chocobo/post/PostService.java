@@ -45,11 +45,20 @@ public class PostService {
     }
 
     Page<Post> findAll(Pageable pageable) {
-        return this.postRepository.findAll(pageable);
+        return this.postRepository.findAllByAvailableTrue(pageable);
+    }
+
+    Post findByTitleId(String titleId, boolean availableOnly) throws PostNotFoundException {
+        if (availableOnly) {
+            return this.postRepository.findByTitleIdAndAvailable(titleId, true).orElseThrow(PostNotFoundException::new);
+        }
+        else {
+            return this.postRepository.findByTitleId(titleId).orElseThrow(PostNotFoundException::new);
+        }
     }
 
     Post findByTitleId(String titleId) throws PostNotFoundException {
-        return this.postRepository.findByTitleId(titleId).orElseThrow(PostNotFoundException::new);
+        return this.findByTitleId(titleId, true);
     }
 
     Post findById(String postId) throws PostNotFoundException {

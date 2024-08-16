@@ -62,8 +62,11 @@ public class PostController {
     }
 
     @GetMapping("/{titleId}")
-    Post findByTitleId(@PathVariable String titleId) throws PostNotFoundException {
-        return this.postService.findByTitleId(titleId);
+    Post findByTitleId(
+            @PathVariable String titleId,
+            @RequestParam(name = "availableOnly", defaultValue = "true", required = false) String availableOnly
+    ) throws PostNotFoundException {
+        return this.postService.findByTitleId(titleId, Boolean.parseBoolean(availableOnly));
     }
 
     @PutMapping("/{postId}")
