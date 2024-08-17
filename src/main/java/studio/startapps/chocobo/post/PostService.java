@@ -128,13 +128,13 @@ public class PostService {
         return this.postRepository.findByKeyword(keyword, pageable);
     }
 
-    List<Post> findSimilarByTitleId(String titleId) throws PostNotFoundException {
+    List<Post> findSimilarByTitleId(String titleId, int size) throws PostNotFoundException {
         List<Post> result = new ArrayList<>();
         Post post = this.findByTitleId(titleId);
         String[] tags = post.getTags().split(TAG_KEYWORD_SEPARATOR);
 
         for (String tag : tags) {
-            Page<Post> posts = this.findByKeyword(tag, Pageable.ofSize(10));
+            Page<Post> posts = this.findByKeyword(tag, Pageable.ofSize(size));
             result.addAll(posts.toList());
         }
 

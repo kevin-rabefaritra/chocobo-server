@@ -1,8 +1,6 @@
 package studio.startapps.chocobo.post;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,18 +18,20 @@ import java.util.List;
 @AllArgsConstructor
 public class PostController {
 
+    private final static int PAGE_DEFAULT_SIZE = 9;
+
     private final static String KEY_HEADER = "Key";
 
     private final PostService postService;
 
     @GetMapping
-    Page<Post> findAll(@PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC) Pageable pageable) {
+    Page<Post> findAll(@PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC, size = PAGE_DEFAULT_SIZE) Pageable pageable) {
         return this.postService.findAll(pageable);
     }
 
     @GetMapping(path = "/search/{keyword}")
     Page<Post> search(
-        @PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC) Pageable pageable,
+        @PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC, size = PAGE_DEFAULT_SIZE) Pageable pageable,
         @PathVariable String keyword
     ) {
         return this.postService.findByKeyword(keyword, pageable);
@@ -57,7 +57,7 @@ public class PostController {
     }
 
     @GetMapping(path = "/popular")
-    Page<Post> findPopular(@PageableDefault(sort = "viewCount", direction = Sort.Direction.DESC) Pageable pageable) {
+    Page<Post> findPopular(@PageableDefault(sort = "viewCount", direction = Sort.Direction.DESC, size = PAGE_DEFAULT_SIZE) Pageable pageable) {
         return this.postService.findAll(pageable);
     }
 
@@ -81,8 +81,18 @@ public class PostController {
     }
 
     @GetMapping(path = "/{titleId}/similar")
-    List<Post> findSimilar(@PathVariable String titleId) throws PostNotFoundException {
-        return this.postService.findSimilarByTitleId(titleId);
+    List<Post> findSimilar(
+            @PathVariable String titleId,
+            @RequestParam(name = "size", defaultValue = "6") int size
+    ) throws PostNotFoundException {
+        int pageSize = Math.min(size, PAGE_DEFAULT_SIZE);
+        List<Post> result = this.postService.findSimilarByTitleId(titleId, pageSize);
+
+        // Fallback to Posts
+        if (result.isEmpty()) {
+            result = this.postService.findAll(Pageable.ofSize(PAGE_DEFAULT_SIZE)).toList();
+        }
+        return result;
     }
 
     @GetMapping(path = "/sync")
