@@ -33,4 +33,4 @@ build/
 .vscode/
 storage/
 docker-compose.production.yaml
-mongo-init.js
+production.env

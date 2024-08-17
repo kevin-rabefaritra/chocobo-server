@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: 'mongo:latest'
+    env_file: "production.env"
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
+  springboot:
+    build:
+      context: ./chocobo-server
+      dockerfile: Dockerfile
+    env_file: "production.env"
+    depends_on:
+      - mongodb
+    ports:
+      - '8080:8080'
+
+  angular:
+    build:
+      context: ./chocobo-client
+      dockerfile: Dockerfile
+    depends_on:
+      - springboot
+    env_file: "production.env"
+    ports:
+      - '443:443'
+    volumes:
+      - ./chocobo-client/dist/chocobo-client:/usr/share/nginx/html
+      - ./chocobo-client/nginx.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt/live/fapfrica.com/fullchain.pem:/etc/ssl/certs/fullchain.pem
+      - /etc/letsencrypt/live/fapfrica.com/privkey.pem:/etc/ssl/private/privkey.pem
