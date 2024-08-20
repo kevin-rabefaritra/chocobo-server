@@ -31,9 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
         openEndpoints.forEach((endpoint) -> {
             registry.addMapping(endpoint)
                     .allowedOrigins("*")
-                    .allowedMethods("POST", "GET")
-                    .allowedHeaders("*")
-                    .allowCredentials(true);
+                    .allowedMethods("POST", "GET");
         });
     }
 }
