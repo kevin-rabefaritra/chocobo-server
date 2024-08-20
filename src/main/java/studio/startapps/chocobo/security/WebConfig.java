@@ -1,6 +1,5 @@
 package studio.startapps.chocobo.security;
 
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -24,6 +23,15 @@ public class WebConfig implements WebMvcConfigurer {
             registry.addMapping(endpoint)
                     .allowedOrigins(this.clientOrigin)
                     .allowedMethods("*")
+                    .allowedHeaders("*")
+                    .allowCredentials(true);
+        });
+
+        List<String> openEndpoints = List.of("/api/batch/**");
+        openEndpoints.forEach((endpoint) -> {
+            registry.addMapping(endpoint)
+                    .allowedOrigins("*")
+                    .allowedMethods("POST", "GET")
                     .allowedHeaders("*")
                     .allowCredentials(true);
         });
