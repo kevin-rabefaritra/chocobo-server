@@ -78,9 +78,12 @@ public class PostService {
         // Fill post other info
         post.setThumbnail(savedThumbnail);
         post.setMedia(savedMedia);
-        post.setPublishedOn(DateUtils.now());
         post.setViewCount(0);
         post.setTitleId(titleId);
+
+        if (post.getPublishedOn() == null) {
+            post.setPublishedOn(DateUtils.today());
+        }
 
         // Make sure the id is auto-generated
         post.setId(null);

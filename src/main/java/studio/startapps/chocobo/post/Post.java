@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import studio.startapps.chocobo.post.internal.MediaType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Document(collection = "posts")
@@ -32,7 +33,7 @@ public class Post {
     private String tags;
 
     @NotNull
-    private LocalDateTime publishedOn;
+    private LocalDate publishedOn;
 
     @NotBlank
     private String author;
