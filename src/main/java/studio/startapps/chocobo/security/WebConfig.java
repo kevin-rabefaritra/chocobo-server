@@ -32,8 +32,8 @@ public class WebConfig implements WebMvcConfigurer {
                     .allowCredentials(true);
         });
 
-        // Actuator configuration
-        registry.addMapping("/actuator/**")
+        // Actuator endpoints
+        registry.addMapping("api/actuator/**")
                 .allowedOrigins(this.actuatorClientOrigin)
                 .allowedMethods("GET");
 

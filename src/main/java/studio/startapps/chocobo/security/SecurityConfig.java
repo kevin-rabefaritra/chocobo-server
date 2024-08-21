@@ -2,6 +2,8 @@ package studio.startapps.chocobo.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +23,8 @@ import studio.startapps.chocobo.auth.AuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     private final AuthenticationFilter authenticationFilter;
     private final UnauthorizedUserHandler unauthorizedUserHandler;
 
@@ -38,8 +42,8 @@ public class SecurityConfig {
                 authorizeRequests.requestMatchers(HttpMethod.GET, "/api/storage/thumbnails/*", "/api/storage/media/*").permitAll();
                 authorizeRequests.requestMatchers(HttpMethod.POST, "/api/batch/posts").permitAll();
 
-                // Prometheus
-                authorizeRequests.requestMatchers(HttpMethod.GET, "/actuator/prometheus").permitAll();
+                // Prometheus (no authentication required)
+                authorizeRequests.requestMatchers(HttpMethod.GET, "/api/actuator/prometheus").permitAll();
                 authorizeRequests.anyRequest().authenticated();
             })
             .exceptionHandling(e -> e.accessDeniedHandler(this.unauthorizedUserHandler).authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
@@ -51,6 +55,7 @@ public class SecurityConfig {
     private static class UnauthorizedUserHandler implements AccessDeniedHandler {
         @Override
         public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) {
+            logger.info("UnauthorizedUserHandler.handle");
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
