@@ -1,7 +1,8 @@
 package studio.startapps.chocobo.post;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,17 +17,29 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/posts")
-@AllArgsConstructor
 public class PostController {
 
-    private final static int DEFAULT_PAGE_SIZE = 12;
+    private static final int DEFAULT_PAGE_SIZE = 12;
 
-    private final static String KEY_HEADER = "Key";
+    private static final String KEY_HEADER = "Key";
 
     private final PostService postService;
 
+    private static final String COUNTER_REQUEST_NAME = "request_count";
+    private static final String COUNTER_SEARCH_NAME = "search_count";
+
+    private final Counter requestCounter;
+    private final Counter searchCounter;
+
+    PostController(PostService postService, MeterRegistry meterRegistry) {
+        this.postService = postService;
+        this.requestCounter = Counter.builder(COUNTER_REQUEST_NAME).description("Number of requested Posts").register(meterRegistry);
+        this.searchCounter = Counter.builder(COUNTER_SEARCH_NAME).description("Number of searches").register(meterRegistry);
+    }
+
     @GetMapping
     Page<Post> findAll(@PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC, size = DEFAULT_PAGE_SIZE) Pageable pageable) {
+        this.requestCounter.increment();
         return this.postService.findAll(pageable);
     }
 
@@ -35,6 +48,7 @@ public class PostController {
         @PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC, size = DEFAULT_PAGE_SIZE) Pageable pageable,
         @PathVariable String keyword
     ) {
+        this.searchCounter.increment();
         return this.postService.findByKeyword(keyword, pageable);
     }
 
@@ -59,6 +73,7 @@ public class PostController {
 
     @GetMapping(path = "/popular")
     Page<Post> findPopular(@PageableDefault(sort = "viewCount", direction = Sort.Direction.DESC, size = DEFAULT_PAGE_SIZE) Pageable pageable) {
+        this.requestCounter.increment();
         return this.postService.findAll(pageable);
     }
 
@@ -67,6 +82,7 @@ public class PostController {
             @PathVariable String titleId,
             @RequestParam(name = "availableOnly", defaultValue = "true", required = false) String availableOnly
     ) throws PostNotFoundException {
+        this.requestCounter.increment();
         return this.postService.findByTitleId(titleId, Boolean.parseBoolean(availableOnly));
     }
 
@@ -86,6 +102,8 @@ public class PostController {
             @PathVariable String titleId,
             @RequestParam(name = "size", defaultValue = "6") int size
     ) throws PostNotFoundException {
+        this.requestCounter.increment();
+
         int pageSize = Math.min(size, DEFAULT_PAGE_SIZE);
         List<Post> result = this.postService.findSimilarByTitleId(titleId, pageSize);
 

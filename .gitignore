@@ -36,3 +36,4 @@ docker-compose.production.yaml
 production.env
 mongo-init.js
 Dockerfile
+prometheus.yml

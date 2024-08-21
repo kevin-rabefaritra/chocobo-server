@@ -11,13 +11,18 @@ import java.util.List;
 public class WebConfig implements WebMvcConfigurer {
 
     private final String clientOrigin;
+    private final String actuatorClientOrigin;
 
-    public WebConfig(@Value("${chocobo.cors.client-origin}") String clientOrigin) {
+    public WebConfig(
+            @Value("${chocobo.cors.client-origin}") String clientOrigin,
+            @Value("${chocobo.cors.actuator.client-origin}") String actuatorClientOrigin) {
         this.clientOrigin = clientOrigin;
+        this.actuatorClientOrigin = actuatorClientOrigin;
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        // Default protected endpoints
         List<String> protectedEndpoints = List.of("/api/auth/renew", "/api/posts/**", "/api/storage/**", "/api/activity/**");
         protectedEndpoints.forEach((endpoint) -> {
             registry.addMapping(endpoint)
@@ -27,6 +32,12 @@ public class WebConfig implements WebMvcConfigurer {
                     .allowCredentials(true);
         });
 
+        // Actuator configuration
+        registry.addMapping("/actuator/**")
+                .allowedOrigins(this.actuatorClientOrigin)
+                .allowedMethods("GET");
+
+        // Batch operations
         List<String> openEndpoints = List.of("/api/batch/**");
         openEndpoints.forEach((endpoint) -> {
             registry.addMapping(endpoint)

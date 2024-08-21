@@ -15,7 +15,7 @@ public class PostBatchController {
 
     private final Logger logger = LoggerFactory.getLogger(PostBatchController.class);
 
-    private final static String KEY_HEADER = "C-Key";
+    private static final String KEY_HEADER = "C-Key";
 
     private final PostService postService;
 
