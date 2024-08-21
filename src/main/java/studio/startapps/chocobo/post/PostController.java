@@ -1,5 +1,6 @@
 package studio.startapps.chocobo.post;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,29 +16,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/posts")
+@AllArgsConstructor
 public class PostController {
+
+    private final static int DEFAULT_PAGE_SIZE = 12;
 
     private final static String KEY_HEADER = "C-Key";
 
     private final PostService postService;
-    private final int pageDefaultSize;
-
-    PostController(
-        @Value("${spring.data.web.pageable.default-page-size}") int pageDefaultSize,
-        PostService postService
-    ) {
-        this.postService = postService;
-        this.pageDefaultSize = pageDefaultSize;
-    }
 
     @GetMapping
-    Page<Post> findAll(@PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC) Pageable pageable) {
+    Page<Post> findAll(@PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC, size = DEFAULT_PAGE_SIZE) Pageable pageable) {
         return this.postService.findAll(pageable);
     }
 
     @GetMapping(path = "/search/{keyword}")
     Page<Post> search(
-        @PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC) Pageable pageable,
+        @PageableDefault(sort = "publishedOn", direction = Sort.Direction.DESC, size = DEFAULT_PAGE_SIZE) Pageable pageable,
         @PathVariable String keyword
     ) {
         return this.postService.findByKeyword(keyword, pageable);
@@ -63,7 +58,7 @@ public class PostController {
     }
 
     @GetMapping(path = "/popular")
-    Page<Post> findPopular(@PageableDefault(sort = "viewCount", direction = Sort.Direction.DESC) Pageable pageable) {
+    Page<Post> findPopular(@PageableDefault(sort = "viewCount", direction = Sort.Direction.DESC, size = DEFAULT_PAGE_SIZE) Pageable pageable) {
         return this.postService.findAll(pageable);
     }
 
@@ -91,12 +86,12 @@ public class PostController {
             @PathVariable String titleId,
             @RequestParam(name = "size", defaultValue = "6") int size
     ) throws PostNotFoundException {
-        int pageSize = Math.min(size, this.pageDefaultSize);
+        int pageSize = Math.min(size, DEFAULT_PAGE_SIZE);
         List<Post> result = this.postService.findSimilarByTitleId(titleId, pageSize);
 
         // Fallback to Posts
         if (result.isEmpty()) {
-            result = this.postService.findAll(Pageable.ofSize(this.pageDefaultSize)).toList();
+            result = this.postService.findAll(Pageable.ofSize(DEFAULT_PAGE_SIZE)).toList();
         }
         return result;
     }
