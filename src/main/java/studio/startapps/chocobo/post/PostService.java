@@ -1,7 +1,5 @@
 package studio.startapps.chocobo.post;
 
-import lombok.AllArgsConstructor;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -144,8 +142,14 @@ public class PostService {
         // Remove itself
         result.removeIf((item) -> Objects.equals(item.getId(), post.getId()));
 
-        // Remove duplicates and return the result
-        return result.stream().filter(StreamUtils.distinctByKey(Post::getId)).toList();
+        // Remove duplicates
+        result = result.stream().filter(StreamUtils.distinctByKey(Post::getId)).toList();
+
+        // Limit results to the page size
+        if (result.size() > size) {
+            result = result.subList(0, size - 1); // -1 because [toIndex] is inclusive
+        }
+        return result;
     }
 
     /**
@@ -153,7 +157,7 @@ public class PostService {
      */
     void updateViewCount() {
         List<Post> posts = this.postRepository.findAll();
-        posts.stream().forEach((item) -> {
+        posts.forEach((item) -> {
             int viewCount = this.activityService.countViewsByPostId(item.getId());
             if (viewCount > 0) {
                 item.setViewCount(viewCount);
