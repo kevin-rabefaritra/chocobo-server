@@ -13,7 +13,7 @@ import studio.startapps.chocobo.activity.internal.UserReportsCountExceedsExcepti
 @AllArgsConstructor
 public class ActivityController {
 
-    private final static String REAL_IP_HEADER = "X-Real-IP";
+    private static final String REAL_IP_HEADER = "X-Real-IP";
 
     private final ActivityService activityService;
 

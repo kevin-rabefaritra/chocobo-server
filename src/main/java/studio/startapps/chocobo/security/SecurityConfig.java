@@ -37,6 +37,9 @@ public class SecurityConfig {
                 authorizeRequests.requestMatchers(HttpMethod.GET, "/api/auth/renew").permitAll();
                 authorizeRequests.requestMatchers(HttpMethod.GET, "/api/storage/thumbnails/*", "/api/storage/media/*").permitAll();
                 authorizeRequests.requestMatchers(HttpMethod.POST, "/api/batch/posts").permitAll();
+
+                // Prometheus
+                authorizeRequests.requestMatchers(HttpMethod.GET, "/actuator/prometheus").permitAll();
                 authorizeRequests.anyRequest().authenticated();
             })
             .exceptionHandling(e -> e.accessDeniedHandler(this.unauthorizedUserHandler).authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
