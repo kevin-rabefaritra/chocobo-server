@@ -34,3 +34,5 @@ build/
 storage/
 docker-compose.production.yaml
 production.env
+mongo-init.js
+Dockerfile

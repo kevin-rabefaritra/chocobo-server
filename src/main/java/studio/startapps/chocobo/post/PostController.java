@@ -21,7 +21,7 @@ public class PostController {
 
     private final static int DEFAULT_PAGE_SIZE = 12;
 
-    private final static String KEY_HEADER = "C-Key";
+    private final static String KEY_HEADER = "Key";
 
     private final PostService postService;
 
