@@ -96,8 +96,8 @@ public class SecurityConfig {
         openEndpointsConfiguration.setAllowedOriginPatterns(List.of("*"));
 
         final CorsConfiguration actuatorEndpointsConfiguration = new CorsConfiguration();
-        actuatorEndpointsConfiguration.setAllowedMethods(List.of("GET"));
-        actuatorEndpointsConfiguration.setAllowedOriginPatterns(List.of(this.actuatorClientOrigin));
+        actuatorEndpointsConfiguration.setAllowedMethods(List.of("GET", "OPTIONS"));
+        actuatorEndpointsConfiguration.setAllowedOrigins(List.of(this.actuatorClientOrigin));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         protectedEndpoints.forEach((endpoint) -> {
