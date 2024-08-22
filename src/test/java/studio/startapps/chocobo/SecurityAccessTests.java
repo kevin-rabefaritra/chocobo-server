@@ -59,7 +59,7 @@ public class SecurityAccessTests {
         mockMvc.perform(
             options("/api/actuator/info")
                 .header("Access-Control-Request-Method", "GET")
-                .header("Origin", "http://localhost:9090")
+                .header("Origin", "http://localhost")
         )
         .andExpect(status().isOk());
     }
