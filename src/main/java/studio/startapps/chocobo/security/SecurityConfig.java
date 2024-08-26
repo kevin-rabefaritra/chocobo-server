@@ -50,20 +50,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Order(0)
-    public SecurityFilterChain corsFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-            .securityMatcher("/**")
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors((cors) -> cors.configurationSource(corsConfigurationSource()));
-        return httpSecurity.build();
-    }
-
-    @Bean
-    @Order(1)
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
             .csrf(AbstractHttpConfigurer::disable)
+            .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(authorizeRequests -> {
                 authorizeRequests.requestMatchers(HttpMethod.GET, "/api/auth/renew").permitAll();
                 authorizeRequests.requestMatchers(HttpMethod.GET, "/api/storage/thumbnails/*", "/api/storage/media/*").permitAll();
@@ -80,6 +70,7 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
+
     CorsConfigurationSource corsConfigurationSource() {
         logger.info("[SecurityConfig.corsConfigurationSource] Registering CORS configuration");
 
@@ -89,7 +80,8 @@ public class SecurityConfig {
 
         final CorsConfiguration protectedEndpointsConfiguration = new CorsConfiguration();
         protectedEndpointsConfiguration.setAllowedMethods(List.of("*"));
-        protectedEndpointsConfiguration.setAllowedOriginPatterns(List.of(this.clientOrigin));
+        protectedEndpointsConfiguration.setAllowedHeaders(List.of("*"));
+        protectedEndpointsConfiguration.setAllowedOrigins(List.of(this.clientOrigin));
 
         final CorsConfiguration openEndpointsConfiguration = new CorsConfiguration();
         openEndpointsConfiguration.setAllowedMethods(List.of("POST", "GET"));
