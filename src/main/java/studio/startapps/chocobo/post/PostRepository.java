@@ -18,6 +18,8 @@ public interface PostRepository extends MongoRepository<Post, String>, PagingAnd
 
     Optional<Post> findByTitleId(String titleId);
 
+    boolean existsByTitleId(String titleId);
+
     @Query("{'$and': [{'$or': [{'title': { $regex: ?0, $options: 'i' }}, {'tags': { $regex: ?0, $options: 'i' }}, {'keywords': { $regex: ?0, $options: 'i' }}]}, {'available': true}]}")
     Page<Post> findByKeyword(String keyword, Pageable pageable);
 }

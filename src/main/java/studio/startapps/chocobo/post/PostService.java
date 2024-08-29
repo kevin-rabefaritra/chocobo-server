@@ -22,6 +22,7 @@ public class PostService {
 
     private static final int KEYWORD_MIN_LENGTH = 4;
     private static final String TAG_KEYWORD_SEPARATOR = ";";
+    private static final int DUPLICATE_TITLE_SUFFIX_MAX_DIGITS = 5;
 
     private final String masterKey;
 
@@ -68,10 +69,10 @@ public class PostService {
             throw new UnauthorizedPostException();
         }
 
+        String titleId = this.generateTitleId(post.getTitle(), true);
         String filename = StringUtils.generateRandom();
         String savedThumbnail = this.fileStorageService.saveThumbnail(thumbnailFile, filename);
         String savedMedia = this.fileStorageService.saveMedia(mediaFile, filename);
-        String titleId = StringUtils.slugify(post.getTitle());
 
         // Fill post other info
         post.setThumbnail(savedThumbnail);
@@ -94,8 +95,14 @@ public class PostService {
             throw new UnauthorizedPostException();
         }
 
+        // Apply the changes on the old Post
         Post updatedPost = this.findById(postId);
-        String titleId = StringUtils.slugify(post.getTitle());
+
+        // If the title has been changed, we generate a new title ID
+        String titleId = updatedPost.getTitleId();
+        if (!updatedPost.getTitle().equals(post.getTitleId())) {
+            titleId = this.generateTitleId(post.getTitle(), true);
+        }
 
         updatedPost.setTitle(post.getTitle());
         updatedPost.setTitleId(titleId);
@@ -164,5 +171,22 @@ public class PostService {
                 this.postRepository.save(item);
             }
         });
+    }
+
+    /**
+     * Generates a slugified title ID based on a title
+     * @param title
+     * @param unique If set to true, numbers are appended to the result until the title is unique
+     * @return Slugified title ID
+     */
+    String generateTitleId(String title, boolean unique) {
+        String result = StringUtils.slugify(title);
+
+        if (unique && this.postRepository.existsByTitleId(result)) {
+            result = StringUtils.appendNumberedSuffix(result, PostService.DUPLICATE_TITLE_SUFFIX_MAX_DIGITS);
+            return this.generateTitleId(result, unique);
+        }
+
+        return result;
     }
 }
