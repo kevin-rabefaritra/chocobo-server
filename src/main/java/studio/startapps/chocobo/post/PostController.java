@@ -122,7 +122,7 @@ public class PostController {
     }
 
     @GetMapping(path = "/tags")
-    Set<String> getTopTags() {
+    List<String> getTopTags() {
         return this.postService.getTopTags(TOP_TAGS_COUNT, DEFAULT_PAGE_SIZE);
     }
 }
