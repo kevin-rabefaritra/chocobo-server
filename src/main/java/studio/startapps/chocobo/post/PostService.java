@@ -2,7 +2,9 @@ package studio.startapps.chocobo.post;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import studio.startapps.chocobo.activity.ActivityService;
@@ -13,9 +15,7 @@ import studio.startapps.chocobo.utils.DateUtils;
 import studio.startapps.chocobo.utils.StreamUtils;
 import studio.startapps.chocobo.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class PostService {
@@ -186,6 +186,25 @@ public class PostService {
             result = StringUtils.appendNumberedSuffix(result, PostService.DUPLICATE_TITLE_SUFFIX_MAX_DIGITS);
             return this.generateTitleId(result, unique);
         }
+
+        return result;
+    }
+
+    /**
+     * Returns a list of the top {count} tags used by the top {pageSize} videos (ordered by viewCount)
+     * @param count
+     * @return
+     */
+    Set<String> getTopTags(int count, int pageSize) {
+        Set<String> result = new HashSet<>(count);
+        Pageable pageable = PageRequest.of(0, pageSize, Sort.by("viewCount").descending());
+        Page<Post> posts = this.findAll(pageable);
+
+        posts.forEach((post) -> {
+            String[] postTags = post.getTags().split(TAG_KEYWORD_SEPARATOR);
+            List<String> tags = Arrays.stream(postTags).filter((item) -> item != null && !item.isBlank()).toList();
+            result.addAll(tags);
+        });
 
         return result;
     }

@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import studio.startapps.chocobo.post.internal.MediaType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Document(collection = "posts")
 @Data

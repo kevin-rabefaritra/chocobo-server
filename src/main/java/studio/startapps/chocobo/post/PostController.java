@@ -14,12 +14,14 @@ import studio.startapps.chocobo.post.internal.PostNotFoundException;
 import studio.startapps.chocobo.post.internal.UnauthorizedPostException;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(path = "/api/posts")
 public class PostController {
 
     private static final int DEFAULT_PAGE_SIZE = 12;
+    private static final int TOP_TAGS_COUNT = 10;
 
     private static final String KEY_HEADER = "Key";
 
@@ -117,5 +119,10 @@ public class PostController {
     @GetMapping(path = "/sync")
     void updateViewCount() {
         this.postService.updateViewCount();
+    }
+
+    @GetMapping(path = "/tags")
+    Set<String> getTopTags() {
+        return this.postService.getTopTags(TOP_TAGS_COUNT, DEFAULT_PAGE_SIZE);
     }
 }
