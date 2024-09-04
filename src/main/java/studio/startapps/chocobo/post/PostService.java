@@ -195,7 +195,7 @@ public class PostService {
      * @param count
      * @return
      */
-    Set<String> getTopTags(int count, int pageSize) {
+    List<String> getTopTags(int count, int pageSize) {
         Set<String> result = new HashSet<>(count);
         Pageable pageable = PageRequest.of(0, pageSize, Sort.by("viewCount").descending());
         Page<Post> posts = this.findAll(pageable);
@@ -205,7 +205,6 @@ public class PostService {
             List<String> tags = Arrays.stream(postTags).filter((item) -> item != null && !item.isBlank()).toList();
             result.addAll(tags);
         });
-
-        return result;
+        return result.stream().toList().subList(0, Math.min(count, result.size()));
     }
 }
